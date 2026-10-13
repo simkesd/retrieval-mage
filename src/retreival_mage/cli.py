@@ -2,6 +2,7 @@ import argparse
 from rich.console import Console
 from groq import Groq
 
+from retreival_mage.corpus import CORPUS_PATH, CorpusError, setup_corpus
 from retreival_mage.settings import ConfigError, Settings
 
 console = Console()
@@ -35,6 +36,17 @@ def run_models(settings):
 def run_query():
     console.print('run query')
 
+def run_setup():
+    try:
+        status = setup_corpus()
+    except CorpusError as exc:
+        raise SystemExit(str(exc)) from exc
+
+    if status == "present":
+        console.print(f"[green]Code of Practice already present:[/green] {CORPUS_PATH}")
+    else:
+        console.print(f"[green]Downloaded Code of Practice:[/green] {CORPUS_PATH}")
+
 def build_parser():
     parser = argparse.ArgumentParser(
         prog="mage",
@@ -44,10 +56,16 @@ def build_parser():
     sub = parser.add_subparsers(dest="command")
 
     models = sub.add_parser("models", help="List Groq chat models you can use")
-    models.set_defaults(func=run_models)
+    models.set_defaults(func=run_models, needs_settings=True)
 
     query = sub.add_parser("query", help="Ask the generation model a question")
-    query.set_defaults(func=run_query)
+    query.set_defaults(func=run_query, needs_settings=True)
+
+    setup = sub.add_parser(
+        "setup",
+        help="Download the Freedom of Information Code of Practice if it is missing",
+    )
+    setup.set_defaults(func=run_setup, needs_settings=False)
 
     return parser
 
@@ -57,6 +75,10 @@ def main(argv=None) -> None:
 
     if args.command is None:
         parser.print_help()
+        return
+
+    if not args.needs_settings:
+        args.func()
         return
 
     try:
