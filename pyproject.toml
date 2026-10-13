@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "retreival-mage"
+version = "0.1.0"
+description = "Retrieval Augmented Augmented (RAG) app for the UK's Freedom of Information Code of Practice"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "rich",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+mage = "retreival_mage.cli:main"
