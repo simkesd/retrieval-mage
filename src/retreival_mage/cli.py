@@ -34,8 +34,8 @@ def run_models(settings):
         )
 
 
-def run_query():
-    console.print('run query')
+def run_query(settings):
+    console.print(f"run query ({settings.generation_model})")
 
 def run_extract(file_location):
     raw_path, clean_path = extract(file_location)
