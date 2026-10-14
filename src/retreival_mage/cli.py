@@ -34,8 +34,13 @@ def run_models(settings):
         )
 
 
-def run_query(settings):
-    console.print(f"run query ({settings.generation_model})")
+def run_query(settings, query: str):
+    client = Groq(api_key=settings.groq_api_key)
+    response = client.chat.completions.create(
+        model=settings.generation_model,
+        messages=[{"role": "user", "content": query}],
+    )
+    console.print(f"[green]Answer: [/green] {response.choices[0].message.content}")
 
 def run_extract(file_location):
     raw_path, clean_path = extract(file_location)
@@ -66,6 +71,7 @@ def build_parser():
     models.set_defaults(func=run_models, needs_settings=True)
 
     query = sub.add_parser("query", help="Ask the generation model a question")
+    query.add_argument("query", help="Question to ask the generation model")
     query.set_defaults(func=run_query, needs_settings=True)
 
     setup = sub.add_parser(
@@ -108,7 +114,10 @@ def main(argv=None) -> None:
     except ConfigError as exc:
         raise SystemExit(str(exc)) from exc
 
-    args.func(settings)
+    if args.command == "query":
+        args.func(settings, args.query)
+    else:
+        args.func(settings)
 
 
 if __name__ == "__main__":
