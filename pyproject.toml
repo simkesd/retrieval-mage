@@ -10,6 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "groq",
+    "pdfplumber",
     "python-dotenv",
     "rich",
 ]

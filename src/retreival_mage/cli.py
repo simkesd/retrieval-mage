@@ -3,6 +3,7 @@ from rich.console import Console
 from groq import Groq
 
 from retreival_mage.corpus import CORPUS_PATH, CorpusError, setup_corpus
+from retreival_mage.extract import extract
 from retreival_mage.settings import ConfigError, Settings
 
 console = Console()
@@ -36,6 +37,12 @@ def run_models(settings):
 def run_query():
     console.print('run query')
 
+def run_extract(file_location):
+    raw_path, clean_path = extract(file_location)
+    console.print(f"[green]Extracted text:[/green] {raw_path}")
+    console.print(f"[green]Cleaned text:[/green] {clean_path}")
+
+
 def run_setup():
     try:
         status = setup_corpus()
@@ -67,6 +74,18 @@ def build_parser():
     )
     setup.set_defaults(func=run_setup, needs_settings=False)
 
+    extract_cmd = sub.add_parser(
+        "extract",
+        help="Extract a PDF into a raw text file and then process it and create a new cleaned file.",
+    )
+    extract_cmd.add_argument(
+        "file_location",
+        nargs="?",
+        default=CORPUS_PATH,
+        help=f"Path to a PDF to extract (default: {CORPUS_PATH})",
+    )
+    extract_cmd.set_defaults(func=run_extract, needs_settings=False)
+
     return parser
 
 def main(argv=None) -> None:
@@ -78,7 +97,10 @@ def main(argv=None) -> None:
         return
 
     if not args.needs_settings:
-        args.func()
+        if args.command == "extract":
+            args.func(args.file_location)
+        else:
+            args.func()
         return
 
     try:
